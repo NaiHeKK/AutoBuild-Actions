@@ -17,7 +17,7 @@ Diy_Core() {
 	INCLUDE_Passwall=true
 	INCLUDE_HelloWorld=false
 	INCLUDE_Bypass=false
-	INCLUDE_OpenClash=true
+	INCLUDE_OpenClash=false
 }
 
 Diy-Part1() {
