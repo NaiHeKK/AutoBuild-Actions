@@ -14,8 +14,8 @@ Diy_Core() {
 	INCLUDE_Enable_FirewallPort_53=true
 
 	INCLUDE_SSR_Plus=true
-	INCLUDE_Passwall=false
-	INCLUDE_HelloWorld=true
+	INCLUDE_Passwall=true
+	INCLUDE_HelloWorld=false
 	INCLUDE_Bypass=false
 	INCLUDE_OpenClash=true
 }
