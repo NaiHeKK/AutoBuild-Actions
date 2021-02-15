@@ -13,11 +13,11 @@ Diy_Core() {
 	INCLUDE_mt7621_OC1000MHz=true
 	INCLUDE_Enable_FirewallPort_53=true
 
-	INCLUDE_SSR_Plus=true
+	INCLUDE_SSR_Plus=false
 	INCLUDE_Passwall=true
 	INCLUDE_HelloWorld=false
-	INCLUDE_Bypass=false
-	INCLUDE_OpenClash=true
+	INCLUDE_Bypass=true
+	INCLUDE_OpenClash=false
 }
 
 Diy-Part1() {
