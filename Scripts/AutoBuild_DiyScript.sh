@@ -32,12 +32,14 @@ Diy-Part1() {
 	Replace_File Customize/banner package/base-files/files/etc
 	
 	Update_Makefile exfat package/kernel/exfat
+	Replace_File Customize/mt76-20210127.mk package/kernel/mt76 Makefile
+	rm -rf package/kernel/mt76/patches
 
 	# ExtraPackages svn network/services dnsmasq https://github.com/openwrt/openwrt/trunk/package/network/services
 	# ExtraPackages svn network/services dropbear https://github.com/openwrt/openwrt/trunk/package/network/services
 	# ExtraPackages svn network/services ppp https://github.com/openwrt/openwrt/trunk/package/network/services
 	# ExtraPackages svn network/services hostapd https://github.com/openwrt/openwrt/trunk/package/network/services
-	ExtraPackages svn kernel mt76 https://github.com/openwrt/openwrt/trunk/package/kernel
+	# ExtraPackages svn kernel mt76 https://github.com/openwrt/openwrt/trunk/package/kernel
 
 	ExtraPackages git lean helloworld https://github.com/fw876 master
 	ExtraPackages git lean luci-theme-argon https://github.com/jerrykuku 18.06
