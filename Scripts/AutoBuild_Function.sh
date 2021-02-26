@@ -74,7 +74,6 @@ Diy_Part1_Base() {
 	fi
 	Update_Makefile xray-core package/lean/helloworld/xray-core
 	Update_Makefile exfat package/kernel/exfat
-	ExtraPackages svn lean luci-app-kodexplorer https://github.com/project-openwrt/openwrt/trunk/package/lean
 	# ExtraPackages svn kernel mt76 https://github.com/openwrt/openwrt/trunk/package/kernel
 }
 
@@ -194,6 +193,7 @@ ExtraPackages() {
 
 	Mkdir package/${PKG_DIR}
 	[ -d "package/${PKG_DIR}/${PKG_NAME}" ] && rm -rf package/${PKG_DIR}/${PKG_NAME}
+	echo "[$(date "+%H:%M:%S")] Removing old package [${PKG_NAME}] ..."
 	[ -d "${PKG_NAME}" ] && rm -rf ${PKG_NAME}
 	Retry_Times=3
 	while [ ! -f "${PKG_NAME}/Makefile" ]
