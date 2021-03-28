@@ -84,7 +84,7 @@ jobs:
         cd openwrt
         source $GITHUB_WORKSPACE/$DIY_SCRIPT
         source $GITHUB_WORKSPACE/$FUNCTION_SCRIPT && Diy-Part1
-        echo "Compile_Date=$(date +%Y%m%d)" > $GITHUB_WORKSPACE/Openwrt.info
+        echo "Compile_Date=$(date +%Y%m%d%H%m)" > $GITHUB_WORKSPACE/Openwrt.info
         echo "Display_Date=$(date +'%Y/%m/%d')" >> $GITHUB_WORKSPACE/Openwrt.info
 
     - name: Update & Install Feeds
