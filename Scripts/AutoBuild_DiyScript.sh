@@ -10,11 +10,13 @@ Diy_Core() {
 	INCLUDE_AutoUpdate=true
 	INCLUDE_AutoBuild_Tools=true
 	INCLUDE_DRM_I915=true
-	INCLUDE_Obsolete_PKG_Compatible=
+	INCLUDE_Theme_Argon=true
+	INCLUDE_Obsolete_PKG_Compatible=false
 }
 
 Firmware-Diy() {
 	Update_Makefile exfat package/kernel/exfat
+	ExtraPackages svn ../feeds/packages/admin netdata https://github.com/openwrt/packages/trunk/admin
 
 	ExtraPackages git other openwrt-passwall https://github.com/xiaorouji main
 
