@@ -5,7 +5,7 @@
 
 Diy_Core() {
 	Author=NaiHeKK
-	Default_Device=
+	Default_Device=d-team_newifi-d2
 
 	INCLUDE_AutoUpdate=true
 	INCLUDE_AutoBuild_Tools=true
