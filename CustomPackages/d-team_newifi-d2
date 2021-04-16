@@ -8,3 +8,4 @@ svn other luci-app-usb3disable https://github.com/immortalwrt/luci/trunk/applica
 svn other luci-app-eqos https://github.com/immortalwrt/luci/trunk/applications
 git other luci-app-bearDropper https://github.com/NateLol
 git other luci-app-onliner https://github.com/rufengsuixing
+git other openwrt-passwall https://github.com/xiaorouji main
