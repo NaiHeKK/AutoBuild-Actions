@@ -18,8 +18,6 @@ Firmware-Diy() {
 	Update_Makefile exfat package/kernel/exfat
 	ExtraPackages svn ../feeds/packages/admin netdata https://github.com/openwrt/packages/trunk/admin
 
-	ExtraPackages git other openwrt-passwall https://github.com/xiaorouji main
-
 	case ${TARGET_PROFILE} in
 	d-team_newifi-d2)
 		Replace_File CustomFiles/mac80211.sh package/kernel/mac80211/files/lib/wifi
