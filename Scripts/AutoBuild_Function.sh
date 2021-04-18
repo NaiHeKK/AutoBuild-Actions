@@ -45,19 +45,22 @@ GET_TARGET_INFO() {
 		TARGET_PROFILE="$(egrep -o "CONFIG_TARGET.*DEVICE.*=y" .config | sed -r 's/.*DEVICE_(.*)=y/\1/')"
 	}
 	[[ -z "${TARGET_PROFILE}" ]] && TARGET_PROFILE="${Default_Device}"
-	case ${TARGET_PROFILE} in
-	x86_64)
+	[[ "${TARGET_PROFILE}" == x86_64 ]] && {
 		[[ "$(cat ${Home}/.config)" =~ "CONFIG_TARGET_IMAGES_GZIP=y" ]] && {
 			Firmware_Type=img.gz
 		} || {
 			Firmware_Type=img
 		}
-	;;
-	*)
+	}
+	TARGET_BOARD="$(awk -F '[="]+' '/TARGET_BOARD/{print $2}' .config)"
+	case ${TARGET_BOARD} in
+	ramips | reltek | ipq40xx | ath79)
 		Firmware_Type=bin
 	;;
+	rockchip)
+		Firmware_Type=img.gz
+	;;
 	esac
-	TARGET_BOARD="$(awk -F '[="]+' '/TARGET_BOARD/{print $2}' .config)"
 	TARGET_SUBTARGET="$(awk -F '[="]+' '/TARGET_SUBTARGET/{print $2}' .config)"
 	
 	echo "Firmware_Type=${Firmware_Type}" > ${Home}/TARGET_INFO
@@ -81,7 +84,7 @@ GET_TARGET_INFO() {
 	echo "Source: ${Source_Repo}"
 	echo "Source Author: ${Source_Owner}"
 	echo "Source Branch: ${Current_Branch}"
-	echo "TARGET_PTOFILE: ${TARGET_PROFILE}"
+	echo "TARGET_PROFILE: ${TARGET_PROFILE}"
 	echo "TARGET_BOARD: ${TARGET_BOARD}"
 	echo "TARGET_SUBTARGET: ${TARGET_SUBTARGET}"
 	
@@ -133,18 +136,18 @@ Firmware-Diy_Base() {
 	coolsnowwolf)
 		Replace_File CustomFiles/Depends/coremark_lede.sh package/lean/coremark coremark.sh
 		Replace_File CustomFiles/Depends/cpuinfo_x86 package/lean/autocore/files/x86/sbin cpuinfo
-		ExtraPackages git lean helloworld https://github.com/fw876 master
+		ExtraPackages git other helloworld https://github.com/fw876 master
 		sed -i 's/143/143,8080/' $(PKG_Finder d package luci-app-ssr-plus)/root/etc/init.d/shadowsocksr
 		sed -i "s?iptables?#iptables?g" ${Version_File} > /dev/null 2>&1
-		sed -i "s?${Old_Version}?${Old_Version} Compiled by ${Author} [${Display_Date}]?g" $Version_File
+		sed -i "s?${Old_Version}?${Old_Version} Compiled by ${Author} [${Display_Date}]?g" ${Version_File}
 		[[ "${INCLUDE_DRM_I915}" == true ]] && Replace_File CustomFiles/Depends/i915-5.4 target/linux/x86 config-5.4
 	;;
 	immortalwrt)
-		sed -i 's/143/143,8080/' package/lean/luci-app-ssr-plus/root/etc/init.d/shadowsocksr
+		sed -i 's/143/143,8080/' $(PKG_Finder d package luci-app-ssr-plus)/root/etc/init.d/shadowsocksr
 		Replace_File CustomFiles/Depends/coremark_ImmortalWrt.sh package/base-files/files/etc coremark.sh
 		Replace_File CustomFiles/Depends/ImmortalWrt package/base-files/files/etc openwrt_release
 		Replace_File CustomFiles/Depends/cpuinfo_x86 package/lean/autocore/files/x86/sbin cpuinfo
-		sed -i "s?Template?Compiled by ${Author} [${Display_Date}]?g" $Version_File
+		sed -i "s?Template?Compiled by ${Author} [${Display_Date}]?g" ${Version_File}
 		[[ "${INCLUDE_DRM_I915}" == true ]] && Replace_File CustomFiles/Depends/i915-4.19 target/linux/x86 config-4.19
 	;;
 	esac
@@ -170,7 +173,6 @@ Firmware-Diy_Base() {
 				Replace_File CustomFiles/Patches/0003-upx-ucl-${Current_Branch}.patch ./
 				cat 0003-upx-ucl-${Current_Branch}.patch | patch -p1 > /dev/null 2>&1
 				ExtraPackages svn ../feeds/packages/lang golang https://github.com/coolsnowwolf/packages/trunk/lang
-		
 				TIME "Start to convert zh-cn translation files to zh_Hans ..."
 				Replace_File Scripts/Convert_Translation.sh package
 				cd ./package
@@ -222,8 +224,8 @@ PS_Firmware() {
 	case "${TARGET_PROFILE}" in
 	x86_64)
 		cd ${Firmware_Path}
-		Legacy_Firmware=${_Firmware}-${TARGET_BOARD}-${TARGET_SUBTARGET}-${_Legacy_Firmware}.${Firmware_Type}
-		EFI_Firmware=${_Firmware}-${TARGET_BOARD}-${TARGET_SUBTARGET}-${_EFI_Firmware}.${Firmware_Type}
+		Legacy_Firmware="${_Firmware}-${TARGET_BOARD}-${TARGET_SUBTARGET}-${_Legacy_Firmware}.${Firmware_Type}"
+		EFI_Firmware="${_Firmware}-${TARGET_BOARD}-${TARGET_SUBTARGET}-${_EFI_Firmware}.${Firmware_Type}"
 		AutoBuild_Firmware="AutoBuild-${TARGET_PROFILE}-${Openwrt_Version}"
 		echo "[Preload Info] Legacy_Firmware: ${Legacy_Firmware}"
 		echo "[Preload Info] UEFI_Firmware: ${EFI_Firmware}"
@@ -311,6 +313,10 @@ Auto_ExtraPackages() {
 }
 
 Auto_ExtraPackages_mod() {
+	[[ $# != 1 ]] && {
+		TIME "[ERROR] Error options: [$#] [$*] !"
+		return 0
+	}
     _FILENAME=${1}
 	echo "" >> ${_FILENAME}
     [ -f "${_FILENAME}" ] && {
@@ -343,9 +349,9 @@ ExtraPackages() {
 	REPO_URL=${4}
 	REPO_BRANCH=${5}
 
-	Mkdir "package/${PKG_DIR}"
+	Mkdir package/${PKG_DIR}
 	[ -d "package/${PKG_DIR}/${PKG_NAME}" ] && {
-		TIME "Removing old package [${PKG_NAME}] ..."
+		TIME "Removing old package: [${PKG_NAME}] ..."
 		rm -rf "package/${PKG_DIR}/${PKG_NAME}"
 	}
 	TIME "Checking out package [${PKG_NAME}] to package/${PKG_DIR} ..."
@@ -359,7 +365,7 @@ ExtraPackages() {
 		svn checkout ${REPO_URL}/${PKG_NAME} ${PKG_NAME} > /dev/null 2>&1
 	;;
 	esac
-	[ -f ${PKG_NAME}/Makefile ] || [ -f ${PKG_NAME}/README* ] && {
+	[ -f ${PKG_NAME}/Makefile ] || [ -f ${PKG_NAME}/README* ] || [[ -n "$(ls -A ${PKG_NAME})" ]] && {
 		mv -f "${PKG_NAME}" "package/${PKG_DIR}"
 	} || {
 		TIME "[ERROR] Package [${PKG_NAME}] is not detected!"
