@@ -6,6 +6,8 @@
 Diy_Core() {
 	Author=NaiHeKK
 	Default_Device=d-team_newifi-d2
+	Short_Firmware_Date=true
+	Default_IP_Address=192.168.1.1
 
 	INCLUDE_AutoUpdate=true
 	INCLUDE_AutoBuild_Tools=true
@@ -16,13 +18,13 @@ Diy_Core() {
 
 Firmware-Diy() {
 	Update_Makefile exfat $(PKG_Finder d package exfat)
-	ExtraPackages svn ../feeds/packages/admin netdata https://github.com/openwrt/packages/trunk/admin
+	AddPackage svn ../feeds/packages/admin netdata https://github.com/openwrt/packages/trunk/admin
 
 	case ${TARGET_PROFILE} in
 	d-team_newifi-d2)
 		Replace_File CustomFiles/mac80211.sh package/kernel/mac80211/files/lib/wifi
 		Replace_File CustomFiles/system_d-team_newifi-d2 package/base-files/files/etc/config system
-		Replace_File CustomFiles/Patches/102-mt7621-fix-cpu-clk-add-clkdev.patch target/linux/ramips/patches-5.4
+		# Replace_File CustomFiles/Patches/102-mt7621-fix-cpu-clk-add-clkdev.patch target/linux/ramips/patches-5.4
 	;;
 	esac
 }
