@@ -33,11 +33,12 @@ env:
   DIY_SCRIPT: Scripts/AutoBuild_DiyScript.sh
   FUNCTION_SCRIPT: Scripts/AutoBuild_Function.sh
   UPLOAD_RELEASE: true
-  UPLOAD_FIRMWARE: false
+  UPLOAD_FIRMWARE: true
   UPLOAD_BIN_DIR: false
   REMOVE_USELESS_FILES: true
   REMOVE_OLD_RELEASE: false
   REMOVE_WORKFLOW_RUNS: true
+  UPLOAD_COWTRANSFER: true
 
 jobs:
   build:
@@ -75,7 +76,9 @@ jobs:
         sudo -E apt-get clean
       
     - name: Clone source code
+      working-directory: /workdir
       run: |
+        df -hT $PWD
         git clone -b $REPO_BRANCH $REPO_URL openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
         [ -f Configs/$CONFIG_FILE ] && cp Configs/$CONFIG_FILE openwrt/.config || {
@@ -119,13 +122,6 @@ jobs:
         source $GITHUB_WORKSPACE/$DIY_SCRIPT
         source $GITHUB_WORKSPACE/$FUNCTION_SCRIPT && PS_Firmware
 
-    - name: Upload Firmware to Artifacts
-      uses: actions/upload-artifact@main
-      if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
-      with:
-        name: OpenWrt_Firmware_${{ env.Artifacts_DATE }}
-        path: openwrt/bin/Firmware
-        
     - name: Upload bin directory to Artifacts
       uses: actions/upload-artifact@main
       if: env.UPLOAD_BIN_DIR == 'true' && !cancelled()
@@ -133,15 +129,51 @@ jobs:
         name: OpenWrt_bin_${{ env.Artifacts_DATE }}
         path: openwrt/bin
 
-    - name: Upload Firmware to Release
-      uses: softprops/action-gh-release@v1
+    - name: Organize files
+      id: organize
+      if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
+      run: |
+        cd openwrt/bin/targets/*/*
+        rm -rf packages
+        echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+        echo "::set-output name=status::success"
+
+
+    - name: Upload Firmware to Artifacts
+      uses: actions/upload-artifact@main
+      if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
+      with:
+        name: OpenWrt_Firmware_${{ env.Artifacts_DATE }}
+        path: ${{ env.FIRMWARE }}
+
+    - name: Upload firmware to cowtransfer
+      id: cowtransfer
+      if: steps.organize.outputs.status == 'success' && env.UPLOAD_COWTRANSFER == 'true' && !cancelled()
+      run: |
+        curl -fsSL git.io/file-transfer | sh
+        ./transfer cow --block 2621440 -s -p 64 --no-progress ${FIRMWARE} 2>&1 | tee cowtransfer.log
+        echo "::warning file=cowtransfer.com::$(cat cowtransfer.log | grep https)"
+        echo "::set-output name=url::$(cat cowtransfer.log | grep https | cut -f3 -d" ")"
+
+    - name: Generate release tag
+      id: tag
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+      run: |
+        echo "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M")"
+        touch release.txt
+        [ $UPLOAD_COWTRANSFER = true ] && echo "🔗 [Cowtransfer](${{ steps.cowtransfer.outputs.url }})" >> release.txt
+        [ $UPLOAD_WETRANSFER = true ] && echo "🔗 [WeTransfer](${{ steps.wetransfer.outputs.url }})" >> release.txt
+        echo "::set-output name=status::success"
+
+    - name: Upload firmware to release
+      uses: softprops/action-gh-release@v1
+      if: steps.tag.outputs.status == 'success' && !cancelled()
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: AutoUpdate
-        body_path: update_log.txt
-        files: openwrt/bin/Firmware/*
+        tag_name: ${{ steps.tag.outputs.release_tag }}
+        body_path: release.txt
+        files: ${{ env.FIRMWARE }}/*
         
     - name: Remove old Release
       uses: dev-drprasad/delete-older-releases@v0.1.0
