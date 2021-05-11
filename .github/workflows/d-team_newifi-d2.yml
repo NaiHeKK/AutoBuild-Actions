@@ -76,7 +76,6 @@ jobs:
         sudo -E apt-get clean
       
     - name: Clone source code
-      working-directory: /workdir
       run: |
         df -hT $PWD
         git clone -b $REPO_BRANCH $REPO_URL openwrt
