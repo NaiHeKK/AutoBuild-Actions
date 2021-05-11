@@ -20,9 +20,6 @@ on:
         description: '固件 IP 地址 [可选]'
         default: ''
 
-  schedule:
-    - cron: 0 16 * * *
-
   watch:
     types: [started]
 
