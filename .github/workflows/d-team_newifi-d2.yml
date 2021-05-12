@@ -72,34 +72,34 @@ jobs:
         sudo -E apt-get -y autoremove --purge
         sudo -E apt-get clean
       
-    # - name: Clone source code
-    #   run: |
-    #     git clone -b $REPO_BRANCH $REPO_URL openwrt
-    #     ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
-    #     [ -f Configs/$CONFIG_FILE ] && cp Configs/$CONFIG_FILE openwrt/.config || {
-    #         echo "未检测到该设备的 $CONFIG_FILE 配置文件!"
-    #         exit 1
-    #     }
-    #     cd openwrt
-    #     ./scripts/feeds update -a
-    #     ./scripts/feeds install -a
-    #     make defconfig
-
-    - name: Run Custom Firmware-Diy Scripts
+    - name: Clone source code
       run: |
-        chmod +x $DIY_SCRIPT
-        chmod +x $FUNCTION_SCRIPT
+        git clone -b $REPO_BRANCH $REPO_URL openwrt
+        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
+        [ -f Configs/$CONFIG_FILE ] && cp Configs/$CONFIG_FILE openwrt/.config || {
+            echo "未检测到该设备的 $CONFIG_FILE 配置文件!"
+            exit 1
+        }
         cd openwrt
-        source $GITHUB_WORKSPACE/$DIY_SCRIPT
-        source $GITHUB_WORKSPACE/$FUNCTION_SCRIPT && Firmware-Diy_Base
-        Firmware-Diy
+        ./scripts/feeds update -a
+        ./scripts/feeds install -a
+        make defconfig
 
-    - name: SSH connection to Actions
-      uses: P3TERX/ssh2actions@v1.0.0
-      if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
-      env:
-        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+    # - name: Run Custom Firmware-Diy Scripts
+    #   run: |
+    #     chmod +x $DIY_SCRIPT
+    #     chmod +x $FUNCTION_SCRIPT
+    #     cd openwrt
+    #     source $GITHUB_WORKSPACE/$DIY_SCRIPT
+    #     source $GITHUB_WORKSPACE/$FUNCTION_SCRIPT && Firmware-Diy_Base
+    #     Firmware-Diy
+
+    # - name: SSH connection to Actions
+    #   uses: P3TERX/ssh2actions@v1.0.0
+    #   if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
+    #   env:
+    #     TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    #     TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
 
     # - name: Preload and Compile the Openwrt
     #   run: |
@@ -117,12 +117,12 @@ jobs:
     #     source $GITHUB_WORKSPACE/$DIY_SCRIPT
     #     source $GITHUB_WORKSPACE/$FUNCTION_SCRIPT && PS_Firmware
 
-    # - name: Upload bin directory to Artifacts
-    #   uses: actions/upload-artifact@main
-    #   if: env.UPLOAD_BIN_DIR == 'true' && !cancelled()
-    #   with:
-    #     name: OpenWrt_bin_${{ env.Artifacts_DATE }}
-    #     path: openwrt/bin
+    - name: Upload bin directory to Artifacts
+      uses: actions/upload-artifact@main
+      if: env.UPLOAD_BIN_DIR == 'true' && !cancelled()
+      with:
+        name: OpenWrt_bin_${{ env.Artifacts_DATE }}
+        path: openwrt/bin
 
     - name: Organize files
       id: organize
