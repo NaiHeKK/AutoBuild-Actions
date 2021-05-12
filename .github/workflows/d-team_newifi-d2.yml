@@ -101,28 +101,38 @@ jobs:
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
 
-    - name: Preload and Compile the Openwrt
-      run: |
-        cp Configs/$CONFIG_FILE openwrt/.config
-        cd openwrt
-        ./scripts/feeds install -a
-        make defconfig
-        make download -j$(nproc)
-        echo "Start to compile OpenWrt ..."
-        make -j$(nproc) || make -j1 V=s
+    # - name: Preload and Compile the Openwrt
+    #   run: |
+    #     cp Configs/$CONFIG_FILE openwrt/.config
+    #     cd openwrt
+    #     ./scripts/feeds install -a
+    #     make defconfig
+    #     make download -j$(nproc)
+    #     echo "Start to compile OpenWrt ..."
+    #     make -j$(nproc) || make -j1 V=s
 
-    - name: Process the AutoBuild Firmware
-      run: |
-        cd openwrt
-        source $GITHUB_WORKSPACE/$DIY_SCRIPT
-        source $GITHUB_WORKSPACE/$FUNCTION_SCRIPT && PS_Firmware
+    # - name: Process the AutoBuild Firmware
+    #   run: |
+    #     cd openwrt
+    #     source $GITHUB_WORKSPACE/$DIY_SCRIPT
+    #     source $GITHUB_WORKSPACE/$FUNCTION_SCRIPT && PS_Firmware
 
-    - name: Upload bin directory to Artifacts
-      uses: actions/upload-artifact@main
-      if: env.UPLOAD_BIN_DIR == 'true' && !cancelled()
-      with:
-        name: OpenWrt_bin_${{ env.Artifacts_DATE }}
-        path: openwrt/bin
+    # - name: Upload bin directory to Artifacts
+    #   uses: actions/upload-artifact@main
+    #   if: env.UPLOAD_BIN_DIR == 'true' && !cancelled()
+    #   with:
+    #     name: OpenWrt_bin_${{ env.Artifacts_DATE }}
+    #     path: openwrt/bin
+
+    - name: Organize files
+      id: organize
+      if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
+      run: |
+        cd openwrt/bin/targets/*/*
+        rm -rf packages
+        cd openwrt/bin/Firmware
+        echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+        echo "::set-output name=status::success"
 
     - name: Upload Firmware to Artifacts
       uses: actions/upload-artifact@main
