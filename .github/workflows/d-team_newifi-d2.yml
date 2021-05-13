@@ -152,8 +152,8 @@ jobs:
       id: tag
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
-        [ $UPLOAD_COWTRANSFER = true ] && echo "🔗 [Cowtransfer-$Artifacts_DATE](${{ steps.cowtransfer.outputs.url }})" >> update_log.txt
-        [ $UPLOAD_WETRANSFER = true ] && echo "🔗 [WeTransfer-$Artifacts_DATE](${{ steps.wetransfer.outputs.url }})" >> update_log.txt
+        [ $UPLOAD_COWTRANSFER = true ] && echo "🔗 [Cowtransfer-$(date +"%Y.%m.%d-%H%M")](${{ steps.cowtransfer.outputs.url }})" >> update_log.txt
+        [ $UPLOAD_WETRANSFER = true ] && echo "🔗 [WeTransfer-$(date +"%Y.%m.%d-%H%M")](${{ steps.wetransfer.outputs.url }})" >> update_log.txt
         echo "::set-output name=status::success"
 
     - name: Upload firmware to release
