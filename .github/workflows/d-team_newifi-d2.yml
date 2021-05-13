@@ -58,7 +58,7 @@ jobs:
         echo "Display_Date=$(date +%Y/%m/%d)" >> $GITHUB_WORKSPACE/Openwrt.info
         echo "Defined_IP_Address=${{ github.event.inputs.ip_addr }}" >> $GITHUB_WORKSPACE/Openwrt.info
         echo "Artifacts_Date=$(date +%Y%m%d%H%M)" >> $GITHUB_ENV
-        touch update_log.txt
+        touch release.txt
 
     - name: Remove useless files
       if: env.REMOVE_USELESS_FILES == 'true' && !cancelled()
@@ -152,8 +152,9 @@ jobs:
       id: tag
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
-        [ $UPLOAD_COWTRANSFER = true ] && echo "🔗 [Cowtransfer-$(date +"%Y.%m.%d-%H%M")](${{ steps.cowtransfer.outputs.url }})" >> update_log.txt
-        [ $UPLOAD_WETRANSFER = true ] && echo "🔗 [WeTransfer-$(date +"%Y.%m.%d-%H%M")](${{ steps.wetransfer.outputs.url }})" >> update_log.txt
+        echo "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M")"
+        [ $UPLOAD_COWTRANSFER = true ] && echo "🔗 [Cowtransfer-$(date +"%Y.%m.%d-%H%M")](${{ steps.cowtransfer.outputs.url }})" >> release.txt
+        [ $UPLOAD_WETRANSFER = true ] && echo "🔗 [WeTransfer-$(date +"%Y.%m.%d-%H%M")](${{ steps.wetransfer.outputs.url }})" >> release.txt
         echo "::set-output name=status::success"
 
     - name: Upload firmware to release
@@ -162,8 +163,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: AutoUpdate
-        body_path: update_log.txt
+        tag_name: ${{ steps.tag.outputs.release_tag }}
+        body_path: release.txt
         files: openwrt/bin/Firmware/*
         
     - name: Remove old Release
