@@ -112,7 +112,7 @@ TIME() {
 export Input_Option=$1
 export Input_Other=$2
 export Download_Path="/tmp/Downloads"
-export Github_Release="${Github}/releases/download/AutoUpdate"
+export Github_Release="${Github}/releases/download/${Github_Tag_Name}"
 export Author="${Github##*com/}"
 export CLOUD_Script="${Author}/master/Scripts/AutoUpdate.sh"
 export Github_Tags="https://api.github.com/repos/${Author}/releases/latest"
@@ -290,8 +290,8 @@ wget -q --timeout 5 ${Github_Tags} -O - > ${Download_Path}/Github_Tags
 TIME "正在获取云端固件信息..."
 export CLOUD_Firmware=$(egrep -o "AutoBuild-${CURRENT_Device}-R[0-9].+-[0-9]+${Firmware_SFX}" ${Download_Path}/Github_Tags | awk 'END {print}')
 export CLOUD_Version=$(echo ${CLOUD_Firmware} | egrep -o "R[0-9].+-[0-9]+")
-echo ${CLOUD_Firmware}
-export Github_Tag_Name=${}
+export Github_Tag_Name=$(awk '/tag_name/ {print $2}' ${Download_Path}/Github_Tags | egrep -o "[0-9].+[0-9]")
+echo ${Github_Tag_Name}
 [[ -z "${CLOUD_Version}" ]] && {
 	TIME r "云端固件信息获取失败!"
 	exit 1
@@ -325,7 +325,7 @@ if [[ ! "${Force_Update}" == 1 ]];then
 		}
 	fi
 fi
-[[ -n "${PROXY_Release}" ]] && export Github_Release="${PROXY_Release}/${Author}/releases/download/AutoUpdate"
+[[ -n "${PROXY_Release}" ]] && export Github_Release="${PROXY_Release}/${Author}/releases/download/${Github_Tag_Name}"
 echo -e "\n云端固件名称: ${Firmware}"
 echo "固件下载地址: ${Github_Release}"
 echo "固件保存位置: ${Download_Path}"
@@ -337,7 +337,7 @@ do
 	if [[ "${Retry_Times}" == 3 ]];then
 		[[ -z "${PROXY_Release}" ]] && {
 			TIME "正在尝试使用 [FastGit] 镜像加速下载..."
-			export Github_Release="${_PROXY_Release}/${Author}/releases/download/AutoUpdate"
+			export Github_Release="${_PROXY_Release}/${Author}/releases/download/${Github_Tag_Name}"
 		}
 	fi
 	if [[ "${Retry_Times}" == 0 ]];then
@@ -386,7 +386,7 @@ if [[ "${Compressed_Firmware}" == 1 ]];then
 fi
 sleep 3
 TIME "正在更新固件,期间请耐心等待..."
-sysupgrade ${Upgrade_Options} ${Firmware}
+# sysupgrade ${Upgrade_Options} ${Firmware}
 [[ $? -ne 0 ]] && {
 	TIME r "固件刷写失败,请尝试手动更新固件!"
 	exit 1
