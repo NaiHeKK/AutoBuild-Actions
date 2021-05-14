@@ -113,13 +113,14 @@ export Input_Other=$2
 export Download_Path="/tmp/Downloads"
 export Github_Release="${Github}/releases/download/AutoUpdate"
 export Author="${Github##*com/}"
-export CLOUD_Script="Hyy2001X/AutoBuild-Actions/master/Scripts/AutoUpdate.sh"
+export CLOUD_Script="${Author}/master/Scripts/AutoUpdate.sh"
 export Github_Tags="https://api.github.com/repos/${Author}/releases/latest"
 export Github_Raw="https://raw.githubusercontent.com"
 export _PROXY_Release="https://download.fastgit.org"
 export TMP_Available="$(df -m | grep "/tmp" | awk '{print $4}' | awk 'NR==1' | awk -F. '{print $1}')"
 export Overlay_Available="$(df -h | grep ":/overlay" | awk '{print $4}' | awk 'NR==1')"
 export Retry_Times=4
+echo $Author
 [ ! -d "${Download_Path}" ] && mkdir -p ${Download_Path}
 opkg list | awk '{print $1}' > ${Download_Path}/Installed_PKG_List
 case ${DEFAULT_Device} in
@@ -228,7 +229,7 @@ else
 		esac
 	;;
 	-x | -xp | -px)
-		export CLOUD_Script=${Github_Raw}/Hyy2001X/AutoBuild-Actions/master/Scripts/AutoUpdate.sh
+		export CLOUD_Script=${Github_Raw}/${Author}/master/Scripts/AutoUpdate.sh
 		TIME "${PROXY_ECHO}开始更新 AutoUpdate 脚本,请耐心等待..."
 		wget -q --tries 3 --timeout 5 ${CLOUD_Script} -O ${Download_Path}/AutoUpdate.sh
 		if [[ $? == 0 ]];then
