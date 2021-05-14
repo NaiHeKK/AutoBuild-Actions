@@ -3,7 +3,7 @@
 # AutoBuild Module by Hyy2001
 # AutoUpdate for Openwrt
 
-Version=V5.7.4.3
+Version=V5.7.4
 
 Shell_Helper() {
 cat <<EOF
@@ -119,6 +119,7 @@ export Github_Raw="https://raw.githubusercontent.com"
 export _PROXY_Release="https://download.fastgit.org"
 export TMP_Available="$(df -m | grep "/tmp" | awk '{print $4}' | awk 'NR==1' | awk -F. '{print $1}')"
 export Overlay_Available="$(df -h | grep ":/overlay" | awk '{print $4}' | awk 'NR==1')"
+export Github_Release="${Github}/releases/download/releases/latest"
 export Retry_Times=4
 [ ! -d "${Download_Path}" ] && mkdir -p ${Download_Path}
 opkg list | awk '{print $1}' > ${Download_Path}/Installed_PKG_List
@@ -385,7 +386,7 @@ if [[ "${Compressed_Firmware}" == 1 ]];then
 fi
 sleep 3
 TIME "正在更新固件,期间请耐心等待..."
-# sysupgrade ${Upgrade_Options} ${Firmware}
+sysupgrade ${Upgrade_Options} ${Firmware}
 [[ $? -ne 0 ]] && {
 	TIME r "固件刷写失败,请尝试手动更新固件!"
 	exit 1
