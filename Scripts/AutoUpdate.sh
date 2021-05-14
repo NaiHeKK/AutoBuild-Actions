@@ -3,7 +3,7 @@
 # AutoBuild Module by Hyy2001
 # AutoUpdate for Openwrt
 
-Version=V5.7.4.2
+Version=V5.7.4.3
 
 Shell_Helper() {
 cat <<EOF
@@ -112,7 +112,6 @@ TIME() {
 export Input_Option=$1
 export Input_Other=$2
 export Download_Path="/tmp/Downloads"
-export Github_Release="${Github}/releases/download/${Github_Tag_Name}"
 export Author="${Github##*com/}"
 export CLOUD_Script="${Author}/master/Scripts/AutoUpdate.sh"
 export Github_Tags="https://api.github.com/repos/${Author}/releases/latest"
@@ -291,7 +290,7 @@ TIME "正在获取云端固件信息..."
 export CLOUD_Firmware=$(egrep -o "AutoBuild-${CURRENT_Device}-R[0-9].+-[0-9]+${Firmware_SFX}" ${Download_Path}/Github_Tags | awk 'END {print}')
 export CLOUD_Version=$(echo ${CLOUD_Firmware} | egrep -o "R[0-9].+-[0-9]+")
 export Github_Tag_Name=$(awk '/tag_name/ {print $2}' ${Download_Path}/Github_Tags | egrep -o "[0-9].+[0-9]")
-echo ${Github_Tag_Name}
+export Github_Release="${Github}/releases/download/${Github_Tag_Name}"
 [[ -z "${CLOUD_Version}" ]] && {
 	TIME r "云端固件信息获取失败!"
 	exit 1
