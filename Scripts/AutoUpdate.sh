@@ -53,6 +53,7 @@ Github Raw:		${Github_Raw}
 固件下载地址:		${Github_Release}
 作者/仓库:		${Author}
 固件格式:		${Firmware_SFX}
+Github_Tags:		https://api.github.com/repos/${Author}/releases/latest
 EOF
 	[[ "${DEFAULT_Device}" == x86_64 ]] && {
 		echo "EFI 引导:		${EFI_Mode}"
@@ -120,7 +121,6 @@ export _PROXY_Release="https://download.fastgit.org"
 export TMP_Available="$(df -m | grep "/tmp" | awk '{print $4}' | awk 'NR==1' | awk -F. '{print $1}')"
 export Overlay_Available="$(df -h | grep ":/overlay" | awk '{print $4}' | awk 'NR==1')"
 export Retry_Times=4
-echo $Author
 [ ! -d "${Download_Path}" ] && mkdir -p ${Download_Path}
 opkg list | awk '{print $1}' > ${Download_Path}/Installed_PKG_List
 case ${DEFAULT_Device} in
@@ -300,7 +300,6 @@ export Firmware_Detail="${Firmware_Name}${Detail_SFX}"
 let X="$(grep -n "${Firmware}" ${Download_Path}/Github_Tags | tail -1 | cut -d : -f 1)-4"
 let CLOUD_Firmware_Size="$(sed -n "${X}p" ${Download_Path}/Github_Tags | egrep -o "[0-9]+" | awk '{print ($1)/1048576}' | awk -F. '{print $1}')+1"
 echo -e "\n固件作者: ${Author%/*}"
-echo "te:${Author}"
 echo "设备名称: ${CURRENT_Device}"
 echo "固件格式: ${Firmware_SFX}"
 echo -e "\n当前固件版本: ${CURRENT_Version}"
