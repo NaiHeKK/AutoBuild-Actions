@@ -290,6 +290,8 @@ wget -q --timeout 5 ${Github_Tags} -O - > ${Download_Path}/Github_Tags
 TIME "正在获取云端固件信息..."
 export CLOUD_Firmware=$(egrep -o "AutoBuild-${CURRENT_Device}-R[0-9].+-[0-9]+${Firmware_SFX}" ${Download_Path}/Github_Tags | awk 'END {print}')
 export CLOUD_Version=$(echo ${CLOUD_Firmware} | egrep -o "R[0-9].+-[0-9]+")
+echo ${CLOUD_Firmware}
+export Github_Tag_Name=${}
 [[ -z "${CLOUD_Version}" ]] && {
 	TIME r "云端固件信息获取失败!"
 	exit 1
