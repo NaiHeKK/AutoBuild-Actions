@@ -536,5 +536,6 @@ Samba_Temp="${AutoBuild_Tools_Temp}/AutoSamba"
 Samba_Disk_List="${Samba_Temp}/Disk_List"
 Samba_UCI_List="${Samba_Temp}/UCI_List"
 [ ! -d "${Samba_Temp}" ] && mkdir -p "${Samba_Temp}"
-Github_Raw="https://raw.githubusercontent.com/Hyy2001X/AutoBuild-Actions/master"
+Author="${Github##*com/}"
+Github_Raw="https://raw.githubusercontent.com/${Author}/master"
 AutoBuild_Tools
