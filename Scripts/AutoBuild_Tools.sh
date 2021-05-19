@@ -18,7 +18,6 @@ do
 	echo "5. 端口占用列表"
 	echo "6. 查看硬盘信息"
 	echo "u. 固件更新"
-	echo ${Author}
 	echo -e "\nx. 更新脚本"
 	echo -e "q. 退出\n"
 	read -p "请从上方选择一个操作:" Choose
@@ -537,7 +536,6 @@ Samba_Temp="${AutoBuild_Tools_Temp}/AutoSamba"
 Samba_Disk_List="${Samba_Temp}/Disk_List"
 Samba_UCI_List="${Samba_Temp}/UCI_List"
 [ ! -d "${Samba_Temp}" ] && mkdir -p "${Samba_Temp}"
-Author="${Github##*com/}"
-Github_Raw="https://raw.githubusercontent.com/${Author}/master"
+Github_Raw="https://raw.githubusercontent.com/NaiHeKK/AutoBuild-Actions/master"
 [ -f /etc/openwrt_info ] && source /etc/openwrt_info
 AutoBuild_Tools
