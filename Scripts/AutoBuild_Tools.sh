@@ -18,6 +18,7 @@ do
 	echo "5. 端口占用列表"
 	echo "6. 查看硬盘信息"
 	echo "u. 固件更新"
+	echo ${Author}
 	echo -e "\nx. 更新脚本"
 	echo -e "q. 退出\n"
 	read -p "请从上方选择一个操作:" Choose
