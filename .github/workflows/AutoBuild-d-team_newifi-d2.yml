@@ -27,8 +27,8 @@ on:
   #schedule:
   #  - cron: 0 8 * * 5
 
-  #watch:
-  #  types: [started]
+  watch:
+    types: [started]
 
 ### 环境变量设置
 env:
@@ -46,6 +46,8 @@ env:
   DELETE_USELESS_FILES: true
 # 删除早期的 workflow 任务
   DELETE_OLD_WORKFLOW: true
+# 上传到奶牛
+  UPLOAD_COWTRANSFER: true
 ### END
 
 jobs:
@@ -155,13 +157,39 @@ jobs:
         name: ${{ env.DEFAULT_TARGET }}_${{ env.REPO_BRANCH }}_bin_${{ env.Artifacts_Date }}
         path: openwrt/bin
 
+    - name: Organize files
+      id: organize
+      if: env.UPLOAD_RELEASES == 'true' && !cancelled()
+      run: |
+        cd openwrt/bin/Firmware
+        echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+        echo "::set-output name=status::success"
+
+    - name: Upload firmware to cowtransfer
+      id: cowtransfer
+      if: env.UPLOAD_COWTRANSFER == 'true' && !cancelled()
+      run: |
+        curl -fsSL git.io/file-transfer | sh
+        ./transfer cow --block 2621440 -s -p 64 --no-progress ${FIRMWARE} 2>&1 | tee cowtransfer.log
+        echo "::warning file=cowtransfer.com::$(cat cowtransfer.log | grep https)"
+        echo "::set-output name=url::$(cat cowtransfer.log | grep https | cut -f3 -d" ")"
+
+    - name: Generate release tag
+      id: tag
+      if: steps.organize.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled()
+      run: |
+        echo "::set-output name=release_tag::$(date +"%Y/%m/%d-%H.%M")"
+        [ $UPLOAD_COWTRANSFER = true ] && echo "🔗 [Cowtransfer-$(date +"%Y/%m/%d-%H.%M")](${{ steps.cowtransfer.outputs.url }})" >> Release_info
+        [ $UPLOAD_WETRANSFER = true ] && echo "🔗 [WeTransfer-$(date +"%Y/%m/%d-%H.%M")](${{ steps.wetransfer.outputs.url }})" >> Release_info
+        echo "::set-output name=status::success"
+
     - name: Upload Firmware to Github Releases
       uses: softprops/action-gh-release@v1
-      if: env.UPLOAD_RELEASES == 'true' && env.Compile_Result == 'true' && !cancelled()
+      if: steps.tag.outputs.status == 'success' && env.UPLOAD_RELEASES == 'true' && env.Compile_Result == 'true' && !cancelled()
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: AutoUpdate
+        tag_name: ${{ steps.tag.outputs.release_tag }}
         body_path: Release_info
         files: openwrt/bin/Firmware/*
 
