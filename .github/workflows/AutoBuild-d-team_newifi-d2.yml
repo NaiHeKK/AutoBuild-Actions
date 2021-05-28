@@ -176,7 +176,7 @@ jobs:
 
     - name: Generate release tag
       id: tag
-      if: steps.organize.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled()
+      if: steps.organize.outputs.status == 'success' && env.UPLOAD_RELEASES == 'true' && !cancelled()
       run: |
         echo "::set-output name=release_tag::$(date +"%Y/%m/%d-%H.%M")"
         [ $UPLOAD_COWTRANSFER = true ] && echo "🔗 [Cowtransfer-$(date +"%Y/%m/%d-%H.%M")](${{ steps.cowtransfer.outputs.url }})" >> Release_info
