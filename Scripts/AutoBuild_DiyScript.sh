@@ -19,8 +19,8 @@ Diy_Core() {
 }
 
 Firmware-Diy() {
-	Update_Makefile exfat $(PKG_Finder d package exfat)
-	AddPackage svn feeds/packages/admin netdata openwrt/packages/trunk/admin
+	TIME "Starting run Firmware-Diy commands..."
+	AddPackage git other luci-app-adguardhome Hyy2001X
 
 	case ${TARGET_PROFILE} in
 	d-team_newifi-d2)
