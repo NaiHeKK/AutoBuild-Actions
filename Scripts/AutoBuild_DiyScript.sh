@@ -5,7 +5,7 @@
 
 Diy_Core() {
 	Author=
-	Default_Device=d-team_newifi-d2
+	Default_Device=
 	Short_Firmware_Date=false
 	Default_IP_Address=10.0.0.1
 
