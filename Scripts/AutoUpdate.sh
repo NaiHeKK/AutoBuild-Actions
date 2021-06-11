@@ -126,12 +126,9 @@ LOAD_VARIABLE() {
 	[[ -z ${TARGET_PROFILE} ]] && TIME r "获取设备名称失败,无法执行更新!" && exit 1
 	[[ -z ${CURRENT_Version} ]] && CURRENT_Version=未知
 	[[ -z ${FW_SAVE_PATH} ]] && FW_SAVE_PATH=/tmp/Downloads
-	Github_Release_URL="${Github}/releases/download/AutoUpdate"
 	FW_Author="${Github##*com/}"
 	Github_Tag_URL="https://api.github.com/repos/${FW_Author}/releases/latest"
 	Github_Proxy_URL="https://download.fastgit.org"
-	FW_NoProxy_URL="https://github.com/${FW_Author}/releases/download/AutoUpdate"
-	FW_Proxy_URL="${Github_Proxy_URL}/${FW_Author}/releases/download/AutoUpdate"
 	case ${TARGET_PROFILE} in
 	x86_64)
 		case ${Firmware_Type} in
@@ -267,6 +264,10 @@ CHECK_UPDATES() {
 	}
 	eval X=$(GET_VARIABLE Egrep_Firmware= ${Default_Variable})
 	FW_Name=$(egrep -o "${X}" ${FW_SAVE_PATH}/Github_Tags | awk 'END {print}')
+	Github_Tag_Name=$(awk '/tag_name/ {print $2}' ${FW_SAVE_PATH}/Github_Tags | egrep -o "[0-9].+[0-9]")
+	Github_Release_URL="${Github}/releases/download/${Github_Tag_Name}"
+	FW_NoProxy_URL="${Github}/releases/download/${Github_Tag_Name}"
+	FW_Proxy_URL="${Github_Proxy_URL}/${FW_Author}/releases/download/${Github_Tag_Name}"
 	[[ -z ${FW_Name} ]] && TIME "云端固件名称获取失败!" && exit 1
 	CLOUD_Firmware_Version=$(echo ${FW_Name} | egrep -o "R[0-9].*20[0-9]+")
 	SHA5BIT=$(echo ${FW_Name} | egrep -o "[a-zA-Z0-9]+.${Firmware_Type}" | sed -r "s/(.*).${Firmware_Type}/\1/")
