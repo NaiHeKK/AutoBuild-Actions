@@ -7,3 +7,4 @@ svn other luci-app-socat Lienol/openwrt-package/trunk
 git other luci-app-onliner rufengsuixing
 git other luci-app-adguardhome Hyy2001X
 git other OpenClash vernesong master
+git other luci-app-bypass garypang13 main
