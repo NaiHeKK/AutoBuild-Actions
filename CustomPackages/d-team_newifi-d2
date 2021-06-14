@@ -4,4 +4,4 @@ git other luci-app-bearDropper NateLol
 svn package/kernel mt76 openwrt/openwrt/trunk/package/kernel
 git other luci-app-dnsfilter garypang13 main
 git other openwrt-passwall xiaorouji main
-git other helloworld OpenWrt-Actions
+git other helloworld fw876
