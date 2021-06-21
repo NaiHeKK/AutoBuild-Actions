@@ -202,6 +202,10 @@ Firmware-Diy_Base() {
 			TIME "[ERROR] ${New_IP_Address} is not an IP Address !"
 		fi
 	}
+	[[ ${INCLUDE_DRM_I915} == true && ${TARGET_PROFILE} == x86_64 ]] && {
+		Copy CustomFiles/Depends/DRM-I915 target/linux/x86
+		for X in $(ls -1 target/linux/x86 | grep "config-"); do echo -e "\n$(cat target/linux/x86/DRM-I915)" >> target/linux/x86/${X}; done
+	}
 	[ -f package/base-files/files/bin/AutoUpdate.sh ] && {
 		AutoUpdate_Version=$(egrep -o "V[0-9].+" package/base-files/files/bin/AutoUpdate.sh | awk 'END{print}')
 	} || AutoUpdate_Version=OFF
@@ -215,13 +219,11 @@ Firmware-Diy_Base() {
 		sed -i 's/143/143,8080/' $(PKG_Finder d package luci-app-ssr-plus)/root/etc/init.d/shadowsocksr
 		sed -i "s?iptables?#iptables?g" ${Version_File}
 		sed -i "s?${Old_Version}?${Old_Version} @ ${Author} [${Display_Date}]?g" ${Version_File}
-		# [[ ${INCLUDE_DRM_I915} == true ]] && Copy CustomFiles/Depends/i915-5.4 target/linux/x86 config-5.4
 	;;
 	immortalwrt)
 		Copy CustomFiles/Depends/ImmortalWrt package/base-files/files/etc openwrt_release
 		Copy CustomFiles/Depends/cpuinfo_x86 package/lean/autocore/files/x86/sbin cpuinfo
 		sed -i "s?Template?Compiled by ${Author} [${Display_Date}]?g" ${Version_File}
-		# [[ ${INCLUDE_DRM_I915} == true ]] && Copy CustomFiles/Depends/i915-4.19 target/linux/x86 config-4.19
 	;;
 	esac
 	case "${Openwrt_Author}" in
@@ -260,7 +262,7 @@ Other_Scripts() {
 			19.07 | 21.02)
 				Copy CustomFiles/Patches/0003-upx-ucl-${Openwrt_Branch}.patch ./
 				cat 0003-upx-ucl-${Openwrt_Branch}.patch | patch -p1 > /dev/null 2>&1
-				# AddPackage svn feeds/packages/lang golang coolsnowwolf/packages/trunk/lang
+				# AddPackage svn feeds/packages golang coolsnowwolf/packages/trunk/lang
 				TIME "Start to convert zh-cn translation files to zh_Hans ..."
 				Copy Scripts/Convert_Translation.sh package
 				cd ./package && bash ./Convert_Translation.sh && cd ..
@@ -273,16 +275,22 @@ Other_Scripts() {
 			TIME "Current source: [${Openwrt_Author}] is not supported,skip..."
 		fi
 	fi
-	[[ -s $GITHUB_WORKSPACE/Configs/Common ]] && {
-		TIME "Merging Common_Config to .config ..."
-		cat $GITHUB_WORKSPACE/Configs/Common >> .config
-	}
+	if [[ -s $GITHUB_WORKSPACE/Configs/Common ]];then
+		[[ ! "$(cat .config)" =~ "## DO NOT MERGE" ]] && {
+			TIME "Merging [Configs/Common] to .config ..."
+			cat $GITHUB_WORKSPACE/Configs/Common >> .config
+		} || {
+			TIME "Skip merge [Configs/Common] ..."
+			sed -i '/## DO NOT MERGE/d' .config >/dev/null 2>&1
+		}
+	fi
 }
 
 PS_Firmware() {
 	source ./VARIABLE_FILE_Sec
 	mkdir -p bin/Firmware
 	cd ${Firmware_Path}
+	echo -e "### Firmware Output ###\n$(ls -1)\n"
 	case "${TARGET_PROFILE}" in
 	x86_64)
 		[[ -f ${Default_Legacy_Firmware} ]] && {
@@ -299,11 +307,12 @@ PS_Firmware() {
 			cp ${Default_Firmware} $(EVAL_FW common ${Home}/VARIABLE_FILE_Sec)
 			TIME "Firmware: [${Default_Firmware}] is detected !"
 		} || {
-			TIME "[ERROR] Firmware is not detected !"
+			TIME "Firmware is not detected !"
+			Error_Output=1
 		}
 	;;
 	esac
-	mv -f AutoBuild-* ${Home}/bin/Firmware
+	[[ ${Error_Output} != 1 ]] && mv -f AutoBuild-* ${Home}/bin/Firmware
 	cd ${Home}
 	echo "[$(date "+%H:%M:%S")] Actions Avaliable: $(df -h | grep "/dev/root" | awk '{printf $4}')"
 }
@@ -408,7 +417,7 @@ Copy() {
 		TIME "[ERROR] Error options: [$#] [$*] !"
 		return 0
 	}
-	[ ! -f "${GITHUB_WORKSPACE}/$1" ] && [ ! -d "${GITHUB_WORKSPACE}/$1" ] && {
+	[[ ! -f ${GITHUB_WORKSPACE}/$1 ]] && [[ ! -d ${GITHUB_WORKSPACE}/$1 ]] && {
 		TIME "CustomFiles/${FILE_NAME} is not detected !"
 		return 0
 	}
