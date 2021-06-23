@@ -12,10 +12,12 @@ GET_INFO() {
 	Openwrt_Author="$(echo "${Openwrt_Repo}" | cut -d "/" -f4)"
 	Openwrt_Repo_Name="$(echo "${Openwrt_Repo}" | cut -d "/" -f5)"
 	Openwrt_Branch="$(GET_BRANCH)"
-	[[ ! ${Openwrt_Branch} == master ]] && {
+	if [[ ${Openwrt_Branch} == master || -z ${Openwrt_Branch} ]];then
+		Openwrt_Version_="R$(date +%y.%m)-"
+	else
 		Openwrt_Branch="$(echo ${Openwrt_Branch} | egrep -o "[0-9]+.[0-9]+")"
-		Openwrt_Version_="R${Openwrt_Branch}-"
-	} || Openwrt_Version_="R$(date +%y.%m)-"
+		Openwrt_Version_="R${Openwrt_Branch}.0-"
+	fi
 	case "${Openwrt_Author}" in
 	coolsnowwolf)
 		Version_File=package/lean/default-settings/files/zzz-default-settings
@@ -89,12 +91,12 @@ GET_INFO() {
 		Default_Legacy_Firmware="${Firmware_Head}-${TARGET_BOARD}-${TARGET_SUBTARGET}-${Legacy_Tail}.${Firmware_Type}"
 		Default_UEFI_Firmware="${Firmware_Head}-${TARGET_BOARD}-${TARGET_SUBTARGET}-${UEFI_Tail}.${Firmware_Type}"
 		AutoBuild_Firmware='AutoBuild-${Openwrt_Repo_Name}-${TARGET_PROFILE}-${CURRENT_Version}-${x86_64_Boot}-${SHA5BIT}.${Firmware_Type}'
-		Egrep_Firmware='AutoBuild-${Openwrt_Repo_Name}-${TARGET_PROFILE}-R[0-9].+-[0-9]+-${x86_64_Boot}-[0-9a-z]+.${Firmware_Type}'
+		Egrep_Firmware='AutoBuild-${Openwrt_Repo_Name}-${TARGET_PROFILE}-R[0-9]+.[0-9]+.[0-9]+-[0-9]+-${x86_64_Boot}.[0-9a-z]+.${Firmware_Type}'
 	;;
 	*)
 		Default_Firmware="${Firmware_Head}-${TARGET_BOARD}-${TARGET_SUBTARGET}-${TARGET_PROFILE}-squashfs-sysupgrade.${Firmware_Type}"
 		AutoBuild_Firmware='AutoBuild-${Openwrt_Repo_Name}-${TARGET_PROFILE}-${CURRENT_Version}-${SHA5BIT}.${Firmware_Type}'
-		Egrep_Firmware='AutoBuild-${Openwrt_Repo_Name}-${TARGET_PROFILE}-R[0-9].+-[0-9]+-[0-9a-z]+.${Firmware_Type}'
+		Egrep_Firmware='AutoBuild-${Openwrt_Repo_Name}-${TARGET_PROFILE}-R[0-9]+.[0-9]+.[0-9]+.[0-9]+-[0-9a-z]+.${Firmware_Type}'
 	;;
 	esac
 	Firmware_Path="bin/targets/${TARGET_BOARD}/${TARGET_SUBTARGET}"
@@ -102,7 +104,6 @@ GET_INFO() {
 	cat >> VARIABLE_FILE_Main <<EOF
 Author=${Author}
 Github=${User_Repo}
-Default_Device=${Default_Device}
 TARGET_PROFILE=${TARGET_PROFILE}
 TARGET_BOARD=${TARGET_BOARD}
 TARGET_SUBTARGET=${TARGET_SUBTARGET}
@@ -214,6 +215,7 @@ Firmware-Diy_Base() {
 		AddPackage git other helloworld fw876 master
 		sed -i 's/143/143,8080/' $(PKG_Finder d package luci-app-ssr-plus)/root/etc/init.d/shadowsocksr
 		sed -i "s?iptables?#iptables?g" ${Version_File}
+		sed -i "s?ip6tables -t?#ip6tables -t?g" ${Version_File}
 		sed -i "s?${Old_Version}?${Old_Version} @ ${Author} [${Display_Date}]?g" ${Version_File}
 	;;
 	immortalwrt)
@@ -353,11 +355,13 @@ TIME() {
 }
 
 PKG_Finder() {
+	local Result
 	[[ $# -ne 3 ]] && {
-		TIME "[ERROR] Error options: [$#] [$*] !"
+		TIME "Usage: PKG_Finder <f | d> Search_Path Target_Name/Target_Path"
 		return 0
 	}
-	find $2 -name $3 -type $1 -depth -exec echo {} \;
+	Result=$(find $2 -name $3 -type $1 -depth -exec echo {} \;)
+	[[ -n ${Result} ]] && echo "${Result}"
 }
 
 AddPackage_List() {
