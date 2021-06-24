@@ -36,15 +36,21 @@ GET_INFO() {
 		x86_Test="$(egrep -o "CONFIG_TARGET.*DEVICE.*=y" .config | sed -r 's/CONFIG_TARGET_(.*)_DEVICE_(.*)=y/\1/')"
 		[[ -n ${x86_Test} ]] && break
 		x86_Test="$(egrep -o "CONFIG_TARGET.*Generic=y" .config | sed -r 's/CONFIG_TARGET_(.*)_Generic=y/\1/')"
-		[[ -z ${x86_Test} ]] && TIME "[ERROR] Can not obtain the TARGET_PROFILE !" && exit 1
+		[[ -z ${x86_Test} ]] && TIME "[ERROR] Can not obtain the TARGET_PROFILE,please check!" && exit 1
 	done
 	[[ ${x86_Test} == x86_64 ]] && {
 		TARGET_PROFILE=x86_64
 	} || {
 		TARGET_PROFILE="$(egrep -o "CONFIG_TARGET.*DEVICE.*=y" .config | sed -r 's/.*DEVICE_(.*)=y/\1/')"
 	}
-	[[ -z ${TARGET_PROFILE} ]] && TARGET_PROFILE="${Default_Device}"
-	[[ -z ${Default_Device} ]] && Default_Device="${TARGET_PROFILE}"
+	[[ -z ${TARGET_PROFILE} ]] && {
+		if [[ -n ${Default_TARGET_PROFILE} && ${Default_TARGET_PROFILE} != auto ]];then
+			TARGET_PROFILE="${Default_TARGET_PROFILE}"
+		else
+			TIME "[ERROR] Can not obtain the TARGET_PROFILE,please check!"
+			exit 1
+		fi
+	}
 	[[ ${TARGET_PROFILE} == x86_64 ]] && {
 		[[ $(cat ${Home}/.config) =~ CONFIG_TARGET_IMAGES_GZIP=y ]] && Firmware_Type=img.gz || Firmware_Type=img 
 	}
@@ -94,7 +100,15 @@ GET_INFO() {
 		Egrep_Firmware='AutoBuild-${Openwrt_Repo_Name}-${TARGET_PROFILE}-R[0-9]+.[0-9]+.[0-9]+-[0-9]+-${x86_64_Boot}.[0-9a-z]+.${Firmware_Type}'
 	;;
 	*)
-		Default_Firmware="${Firmware_Head}-${TARGET_BOARD}-${TARGET_SUBTARGET}-${TARGET_PROFILE}-squashfs-sysupgrade.${Firmware_Type}"
+		case "${TARGET_SUBTARGET}" in
+		generic)
+			Default_Firmware="${Firmware_Head}-${TARGET_BOARD}-${TARGET_PROFILE}-squashfs-sysupgrade.${Firmware_Type}"
+		;;
+		*)
+			Default_Firmware="${Firmware_Head}-${TARGET_BOARD}-${TARGET_SUBTARGET}-${TARGET_PROFILE}-squashfs-sysupgrade.${Firmware_Type}"
+		;;
+		esac
+		
 		AutoBuild_Firmware='AutoBuild-${Openwrt_Repo_Name}-${TARGET_PROFILE}-${CURRENT_Version}-${SHA5BIT}.${Firmware_Type}'
 		Egrep_Firmware='AutoBuild-${Openwrt_Repo_Name}-${TARGET_PROFILE}-R[0-9]+.[0-9]+.[0-9]+.[0-9]+-[0-9a-z]+.${Firmware_Type}'
 	;;
@@ -147,7 +161,7 @@ Firmware-Diy_Base() {
 	mkdir -p package/base-files/files/etc/AutoBuild
 	[ -f VARIABLE_FILE_Main ] && cp VARIABLE_FILE_Main package/base-files/files/etc/AutoBuild/Default_Variable
 	Copy CustomFiles/Depends/Custom_Variable package/base-files/files/etc/AutoBuild
-	AddPackage_List ${GITHUB_WORKSPACE}/CustomPackages/Common
+	[[ ! "$(cat .config)" =~ "## DO NOT MERGE" ]] && AddPackage_List ${GITHUB_WORKSPACE}/CustomPackages/Common
 	AddPackage_List ${GITHUB_WORKSPACE}/CustomPackages/${TARGET_PROFILE}
 	chmod +x -R ${GITHUB_WORKSPACE}/Scripts
 	chmod 777 -R ${GITHUB_WORKSPACE}/CustomFiles
@@ -215,7 +229,6 @@ Firmware-Diy_Base() {
 		AddPackage git other helloworld fw876 master
 		sed -i 's/143/143,8080/' $(PKG_Finder d package luci-app-ssr-plus)/root/etc/init.d/shadowsocksr
 		sed -i "s?iptables?#iptables?g" ${Version_File}
-		sed -i "s?ip6tables -t?#ip6tables -t?g" ${Version_File}
 		sed -i "s?${Old_Version}?${Old_Version} @ ${Author} [${Display_Date}]?g" ${Version_File}
 	;;
 	immortalwrt)
@@ -373,7 +386,6 @@ AddPackage_List() {
 	[[ -s $1 ]] && {
 		TIME "Loading Custom Packages list: [$1]..."
 		cat $1 | sed '/^$/d' | while read X;do
-			[[ $* =~ "#" ]] && TIME "Skip check out: ${X}"
 			[[ -n ${X} && ! $* =~ "#" ]] && AddPackage ${X}
 		done
 	}

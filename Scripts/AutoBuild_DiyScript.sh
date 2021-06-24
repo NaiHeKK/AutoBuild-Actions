@@ -3,8 +3,8 @@
 # AutoBuild DiyScript
 
 Diy_Core() {
-	Author=
-	Default_Device=
+	Author=Hyy2001
+	Default_TARGET_PROFILE=auto
 	Short_Firmware_Date=true
 	Default_LAN_IP=10.0.0.1
 
@@ -19,5 +19,8 @@ Firmware-Diy() {
 	d-team_newifi-d2)
 		Copy CustomFiles/mac80211.sh package/kernel/mac80211/files/lib/wifi
 		# Copy CustomFiles/system_d-team_newifi-d2 package/base-files/files/etc/config system
+	;;
+	*)
+		:
 	esac
 }

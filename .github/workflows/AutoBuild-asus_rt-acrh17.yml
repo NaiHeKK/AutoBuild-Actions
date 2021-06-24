@@ -4,7 +4,7 @@
 #   Author: Hyy2001X                                      #
 ###########################################################
 
-name: AutoBuild-youhua_wr1200js
+name: AutoBuild-asus_rt-acrh17
 
 ### 以下内容请保持不变
 on:
@@ -29,7 +29,7 @@ on:
 ### 环境变量设置
 env:
 # 设备名称
-  DEFAULT_TARGET: youhua_wr1200js
+  DEFAULT_TARGET: asus_rt-acrh17
 # 源码仓库:分支
   DEFAULT_SOURCE: coolsnowwolf/lede:master
 # 上传固件到 Github Releases
