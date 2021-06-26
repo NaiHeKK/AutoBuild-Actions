@@ -123,10 +123,11 @@ jobs:
         rm -rf ./tmp && ./scripts/feeds install -a > /dev/null 2>&1
         make defconfig
         make download -j$(nproc)
-        cd lede/package/lean/
+        cd lede
         git clone https://github.com/jerrykuku/lua-maxminddb.git  #git lua-maxminddb 依赖
         git clone https://github.com/jerrykuku/luci-app-vssr.git
         make menuconfig
+        cd package/lean/
         # make -j$(nproc) || make -j1 V=s
         # [ $? == 0 ] && Compile_Result=true
         echo "Compile_Result=$Compile_Result" >> $GITHUB_ENV
