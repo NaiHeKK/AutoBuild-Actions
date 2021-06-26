@@ -95,6 +95,12 @@ jobs:
         echo "Artifacts_Date=$(date +%m%d%H%M)" >> $GITHUB_ENV
         touch Release_info
 
+    - name: Add vssr
+      run: |
+        cd openwrt/package/lean/
+        git clone https://github.com/jerrykuku/lua-maxminddb.git  #git lua-maxminddb 依赖
+        git clone https://github.com/jerrykuku/luci-app-vssr.git
+
     - name: Clone Openwrt Source Code
       run: |
         git clone -b $REPO_BRANCH $REPO_URL openwrt
@@ -102,6 +108,7 @@ jobs:
         cd openwrt
         ./scripts/feeds update -a
         ./scripts/feeds install -a > /dev/null 2>&1
+        make menuconfig
 
     - name: Run AutoBuild_DiyScript.sh
       run: |
