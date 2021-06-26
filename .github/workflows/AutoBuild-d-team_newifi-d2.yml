@@ -99,15 +99,8 @@ jobs:
       run: |
         git clone -b $REPO_BRANCH $REPO_URL openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
-        cd openwrt/package/lean/
-        git clone https://github.com/jerrykuku/lua-maxminddb.git  #git lua-maxminddb 依赖
-        git clone https://github.com/jerrykuku/luci-app-vssr.git
-        ls
-        cd ../../
-        pwd
         ./scripts/feeds update -a
         ./scripts/feeds install -a > /dev/null 2>&1
-        make menuconfig
 
     - name: Run AutoBuild_DiyScript.sh
       run: |
@@ -128,6 +121,11 @@ jobs:
         source $GITHUB_WORKSPACE/Scripts/AutoBuild_Function.sh && Other_Scripts
         rm -rf ./tmp && ./scripts/feeds install -a > /dev/null 2>&1
         make defconfig
+        cd package/lean/
+        git clone https://github.com/jerrykuku/lua-maxminddb.git  #git lua-maxminddb 依赖
+        git clone https://github.com/jerrykuku/luci-app-vssr.git
+        cd ../../
+        make menuconfig
         make download -j$(nproc)
         make -j$(nproc) || make -j1 V=s
         [ $? == 0 ] && Compile_Result=true
