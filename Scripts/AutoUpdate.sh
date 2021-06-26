@@ -155,12 +155,8 @@ LOAD_VARIABLE() {
 	[[ -z ${TARGET_PROFILE} ]] && TARGET_PROFILE="$(jsonfilter -e '@.model.id' < /etc/board.json | tr ',' '_')"
 	[[ -z ${TARGET_PROFILE} ]] && ECHO r "获取设备名称失败,无法执行更新!" && EXIT 1
 	[[ -z ${CURRENT_Version} ]] && CURRENT_Version=未知
-	Github_Release_URL="${Github}/releases/download/AutoUpdate"
 	FW_Author="${Github##*com/}"
 	Github_API="https://api.github.com/repos/${FW_Author}/releases/latest"
-	Release_URL="https://github.com/${FW_Author}/releases/download/AutoUpdate"
-	Release_FastGit_URL="https://download.fastgit.org/${FW_Author}/releases/download/AutoUpdate"
-	Release_Goproxy_URL="https://ghproxy.com/${Release_URL}"
 	case ${TARGET_PROFILE} in
 	x86_64)
 		case ${Firmware_Type} in
@@ -326,8 +322,9 @@ GET_CLOUD_VERSION() {
 	FW_Name=$(egrep -o "${X}" ${AutoUpdate_Path}/Github_Tags | awk 'END {print}')
 	Github_Tag_Name=$(awk '/tag_name/ {print $2}' ${FW_SAVE_PATH}/Github_Tags | egrep -o "[0-9].+[0-9]")
 	Github_Release_URL="${Github}/releases/download/${Github_Tag_Name}"
-	FW_NoProxy_URL="${Github}/releases/download/${Github_Tag_Name}"
-	FW_Proxy_URL="${Github_Proxy_URL}/${FW_Author}/releases/download/${Github_Tag_Name}"
+	Release_URL="https://github.com/${FW_Author}/releases/download/${Github_Tag_Name}"
+	Release_FastGit_URL="https://download.fastgit.org/${FW_Author}/releases/download/${Github_Tag_Name}"
+	Release_Goproxy_URL="https://ghproxy.com/${Release_URL}"
 	[[ -z ${FW_Name} ]] && ECHO "云端固件名称获取失败!" && EXIT 1
 	CLOUD_Firmware_Version=$(echo ${FW_Name} | egrep -o "R[0-9].*20[0-9]+")
 }
@@ -565,7 +562,7 @@ AutoUpdate_Main() {
 				[[ -n ${Version} ]] && echo "${Version}" || echo "未知"
 			;;
 			cloud)
-				Cloud_Script_Version="$(${Downloader} https://ghproxy.com/https://raw.githubusercontent.com/Hyy2001X/AutoBuild-Actions/master/Scripts/AutoUpdate.sh -O - | egrep -o "V[0-9].+")"
+				Cloud_Script_Version="$(${Downloader} https://ghproxy.com/https://raw.githubusercontent.com/${FW_Author}/AutoBuild-Actions/master/Scripts/AutoUpdate.sh -O - | egrep -o "V[0-9].+")"
 				[[ -n ${Cloud_Script_Version} ]] && echo "${Cloud_Script_Version}" || echo "未知"
 			;;
 			*)
@@ -694,10 +691,10 @@ AutoUpdate_Main() {
 	done
 }
 
-Version=V6.2.9
+Version=V6.2.9.1
 AutoUpdate_Path=/tmp/AutoUpdate
 AutoUpdate_Log_Path=/tmp
-AutoUpdate_Script_URL=https://ghproxy.com/https://raw.githubusercontent.com/Hyy2001X/AutoBuild-Actions/master/Scripts/AutoUpdate.sh
+AutoUpdate_Script_URL=https://ghproxy.com/https://raw.githubusercontent.com/${FW_Author}/AutoBuild-Actions/master/Scripts/AutoUpdate.sh
 Upgrade_Command=sysupgrade
 Default_Variable=/etc/AutoBuild/Default_Variable
 Custom_Variable=/etc/AutoBuild/Custom_Variable
