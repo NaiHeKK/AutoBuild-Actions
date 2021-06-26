@@ -99,6 +99,7 @@ jobs:
       run: |
         git clone -b $REPO_BRANCH $REPO_URL openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
+        cd openwrt
         ./scripts/feeds update -a
         ./scripts/feeds install -a > /dev/null 2>&1
 
