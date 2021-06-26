@@ -105,15 +105,15 @@ jobs:
 
     - name: Run AutoBuild_DiyScript.sh
       run: |
-        chmod +x Scripts/AutoBuild_*.sh
-        cp $GITHUB_WORKSPACE/Configs/$TARGET_PROFILE openwrt/.config
-        cd openwrt
-        make defconfig > /dev/null 2>&1
-        source $GITHUB_WORKSPACE/Scripts/AutoBuild_DiyScript.sh
-        source $GITHUB_WORKSPACE/Scripts/AutoBuild_Function.sh
-        Firmware-Diy_Base
-        source $GITHUB_WORKSPACE/openwrt/VARIABLE_FILE_Sec && Firmware-Diy
-        rm -f .config && cp $GITHUB_WORKSPACE/Configs/$TARGET_PROFILE .config
+        # chmod +x Scripts/AutoBuild_*.sh
+        # cp $GITHUB_WORKSPACE/Configs/$TARGET_PROFILE openwrt/.config
+        # cd openwrt
+        # make defconfig > /dev/null 2>&1
+        # source $GITHUB_WORKSPACE/Scripts/AutoBuild_DiyScript.sh
+        # source $GITHUB_WORKSPACE/Scripts/AutoBuild_Function.sh
+        # Firmware-Diy_Base
+        # source $GITHUB_WORKSPACE/openwrt/VARIABLE_FILE_Sec && Firmware-Diy
+        # rm -f .config && cp $GITHUB_WORKSPACE/Configs/$TARGET_PROFILE .config
 
     - name: Compile
       run: |
