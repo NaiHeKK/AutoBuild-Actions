@@ -124,9 +124,9 @@ jobs:
         make defconfig
         make download -j$(nproc)
         cd lede/package/lean/
-        git clone https://github.com/jerrykuku/lua-maxminddb.git  #git lua-maxminddb 依赖
-        git clone https://github.com/jerrykuku/luci-app-vssr.git
-        make menuconfig
+        # git clone https://github.com/jerrykuku/lua-maxminddb.git  #git lua-maxminddb 依赖
+        # git clone https://github.com/jerrykuku/luci-app-vssr.git
+        # make menuconfig
         make -j$(nproc) || make -j1 V=s
         [ $? == 0 ] && Compile_Result=true
         echo "Compile_Result=$Compile_Result" >> $GITHUB_ENV
