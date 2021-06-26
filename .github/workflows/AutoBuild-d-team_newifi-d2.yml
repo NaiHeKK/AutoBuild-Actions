@@ -115,17 +115,6 @@ jobs:
         source $GITHUB_WORKSPACE/openwrt/VARIABLE_FILE_Sec && Firmware-Diy
         rm -f .config && cp $GITHUB_WORKSPACE/Configs/$TARGET_PROFILE .config
 
-    - name: Add vssr
-      run: |
-        cd openwrt
-        ls
-        cd lede/package/lean/
-        git clone https://github.com/jerrykuku/lua-maxminddb.git  #git lua-maxminddb 依赖
-        git clone https://github.com/jerrykuku/luci-app-vssr.git
-        pwd
-        make menuconfig
-        pwd
-
     - name: Compile
       run: |
         export Compile_Result=false
