@@ -338,7 +338,7 @@ GET_CLOUD_VERSION() {
 	}
 	eval X=$(GET_VARIABLE Egrep_Firmware ${Default_Variable})
 	FW_Name=$(egrep -o "${X}" ${AutoUpdate_Path}/Github_Tags | awk 'END {print}')
-	Github_Tag_Name=$(awk '/tag_name/ {print $2}' ${FW_SAVE_PATH}/Github_Tags | egrep -o "[0-9].+[0-9]")
+	Github_Tag_Name=$(awk '/tag_name/ {print $2}' ${AutoUpdate_Path}/Github_Tags | egrep -o "[0-9].+[0-9]")
 	Github_Release_URL="${Github}/releases/download/${Github_Tag_Name}"
 	Release_URL="https://github.com/${FW_Author}/releases/download/${Github_Tag_Name}"
 	Release_FastGit_URL="https://download.fastgit.org/${FW_Author}/releases/download/${Github_Tag_Name}"
@@ -464,10 +464,6 @@ EOF
 	esac
 	Retry_Times=5
 	ECHO "${Proxy_Echo}正在下载固件,请耐心等待 ..."
-	echo "test"
-	echo "11${Release_FastGit_URL}"
-	echo "22${Release_Goproxy_URL}"
-	echo "33${Github_Release_URL}"
 	while [[ ${Retry_Times} -ge 0 ]];do
 		if [[ ! ${PROXY_Mode} == 1 && ${Retry_Times} == 4 ]];then
 			ECHO g "尝试使用 [FastGit] 镜像加速下载固件!"
@@ -487,7 +483,6 @@ EOF
 		fi
 		Retry_Times=$((${Retry_Times} - 1))
 		ECHO r "固件下载失败,剩余尝试次数: ${Retry_Times} 次"
-		echo "fw${FW_URL}"
 	done
 	CURRENT_SHA256=$(GET_SHA256SUM ${AutoUpdate_Path}/${FW_Name} 5)
 	CLOUD_SHA256=$(echo ${FW_Name} | egrep -o "[0-9a-z]+.${Firmware_Type}" | sed -r "s/(.*).${Firmware_Type}/\1/")
