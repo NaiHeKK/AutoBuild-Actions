@@ -464,6 +464,9 @@ EOF
 	esac
 	Retry_Times=5
 	ECHO "${Proxy_Echo}正在下载固件,请耐心等待 ..."
+	echo "${Release_FastGit_URL}"
+	echo "${Release_Goproxy_URL}"
+	echo "${Github_Release_URL}"
 	while [[ ${Retry_Times} -ge 0 ]];do
 		if [[ ! ${PROXY_Mode} == 1 && ${Retry_Times} == 4 ]];then
 			ECHO g "尝试使用 [FastGit] 镜像加速下载固件!"
@@ -483,6 +486,7 @@ EOF
 		fi
 		Retry_Times=$((${Retry_Times} - 1))
 		ECHO r "固件下载失败,剩余尝试次数: ${Retry_Times} 次"
+		echo "fw${FW_URL}"
 	done
 	CURRENT_SHA256=$(GET_SHA256SUM ${AutoUpdate_Path}/${FW_Name} 5)
 	CLOUD_SHA256=$(echo ${FW_Name} | egrep -o "[0-9a-z]+.${Firmware_Type}" | sed -r "s/(.*).${Firmware_Type}/\1/")
