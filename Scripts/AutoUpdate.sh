@@ -464,9 +464,10 @@ EOF
 	esac
 	Retry_Times=5
 	ECHO "${Proxy_Echo}正在下载固件,请耐心等待 ..."
-	echo "${Release_FastGit_URL}"
-	echo "${Release_Goproxy_URL}"
-	echo "${Github_Release_URL}"
+	echo "test"
+	echo "11${Release_FastGit_URL}"
+	echo "22${Release_Goproxy_URL}"
+	echo "33${Github_Release_URL}"
 	while [[ ${Retry_Times} -ge 0 ]];do
 		if [[ ! ${PROXY_Mode} == 1 && ${Retry_Times} == 4 ]];then
 			ECHO g "尝试使用 [FastGit] 镜像加速下载固件!"
