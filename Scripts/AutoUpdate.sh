@@ -329,7 +329,6 @@ GET_FW_LOG() {
 
 GET_CLOUD_VERSION() {
 	rm -f ${AutoUpdate_Path}/Github_Tags
-	echo "${Downloader} ${Github_API}"
 	${Downloader} ${Github_API} -O ${AutoUpdate_Path}/Github_Tags
 	[[ $? != 0 || ! -f ${AutoUpdate_Path}/Github_Tags ]] && {
 		[[ $1 == check ]] && echo "获取失败" > /tmp/Cloud_Version
