@@ -37,6 +37,7 @@ SHELL_HELP() {
 	-L,--list		打印当前系统信息
 	-U			仅检查版本更新
 	-F			强制刷写固件
+	--skip			跳过固件 SHA256 比对校验 (危险)
 	--corn-rm		删除所有 AutoUpdate 定时任务
 	--bak <Path> <Name>	备份 Openwrt 配置文件到用户指定的目录
 	--clean			清理固件下载缓存
@@ -61,7 +62,7 @@ SHOW_VARIABLE() {
 固件作者:		${Author}
 软件架构:		${TARGET_SUBTARGET}
 作者仓库:		${Github}
-OpenWrt 源码:		https://github.com/${Openwrt_Author}/${Openwrt_Repo_Name}:${Openwrt_Branch}	
+OpenWrt 源码:		https://github.com/${Openwrt_Maintainer}/${Openwrt_Repo_Name}:${Openwrt_Branch}	
 Release API:		${Github_API}
 固件格式-框架:		$(GET_VARIABLE AutoBuild_Firmware ${Default_Variable})
 固件名称-框架:		$(GET_VARIABLE Egrep_Firmware ${Default_Variable})
@@ -150,7 +151,7 @@ RANDOM() {
 
 GET_SHA256SUM() {
 	[[ ! -f $1 && ! -s $1 ]] && {
-		ECHO r "未检测到文件: [$1] 或该文件为空,无法计算 sha256 值!"
+		ECHO r "未检测到文件: [$1] 或该文件为空,无法计算 SHA256 值!"
 		EXIT 1
 	}
 	sha256sum $1 | cut -c1-$2
@@ -386,6 +387,10 @@ PREPARE_UPGRADES() {
 			ECHO g "自定义固件保存目录: ${AutoUpdate_Path}"
 		}
 		[[ $1 == -F ]] && Only_Force_Write=1
+		[[ $1 == --skip ]] && {
+			Skip_SHA256=1
+			MSG_3=" [跳过验证]"
+		}
 		case "$1" in
 		-n | -f | -u)
 			Option="$1"
@@ -418,7 +423,7 @@ PREPARE_UPGRADES() {
 		MSG_2=" [强制刷写]"
 		Upgrade_Option="${Upgrade_Option} -F"
 	}
-	ECHO g "执行: ${Proxy_Echo}${MSG}${MSG_1}${MSG_2}"
+	ECHO g "执行: ${Proxy_Echo}${MSG}${MSG_1}${MSG_2}${MSG_3}"
 	if [[ $(CHECK_PKG curl) == true && ${Proxy_Mode} != 1 ]];then
 		Google_Check=$(curl -I -s --connect-timeout 3 google.com -w %{http_code} | tail -n1)
 		[[ ${Google_Check} != 301 ]] && {
@@ -483,21 +488,23 @@ EOF
 		Retry_Times=$((${Retry_Times} - 1))
 		ECHO r "固件下载失败,剩余尝试次数: ${Retry_Times} 次"
 	done
-	CURRENT_SHA256=$(GET_SHA256SUM ${AutoUpdate_Path}/${FW_Name} 5)
-	CLOUD_SHA256=$(echo ${FW_Name} | egrep -o "[0-9a-z]+.${Firmware_Type}" | sed -r "s/(.*).${Firmware_Type}/\1/")
-	[[ ${CURRENT_SHA256} != ${CLOUD_SHA256} ]] && {
-		ECHO r "本地固件 SHA256 与云端对比不通过,请检查网络后重试!"
-		EXIT 1
-	}
+	if [[ ! ${Skip_SHA256} == 1 ]];then
+		CURRENT_SHA256=$(GET_SHA256SUM ${AutoUpdate_Path}/${FW_Name} 5)
+		CLOUD_SHA256=$(echo ${FW_Name} | egrep -o "[0-9a-z]+.${Firmware_Type}" | sed -r "s/(.*).${Firmware_Type}/\1/")
+		[[ ${CURRENT_SHA256} != ${CLOUD_SHA256} ]] && {
+			ECHO r "本地固件 SHA256 与云端比对校验失败 [${CURRENT_SHA256}],请检查网络后重试!"
+			EXIT 1
+		}
+	fi
 	case "${Firmware_Type}" in
 	img.gz)
 		ECHO "正在解压固件,请耐心等待 ..."
 		gzip -d -q -f -c ${AutoUpdate_Path}/${FW_Name} > ${AutoUpdate_Path}/$(echo ${FW_Name} | sed -r 's/(.*).gz/\1/')
-		FW_Name="$(echo ${FW_Name} | sed -r 's/(.*).gz/\1/')"
 		[[ $? != 0 ]] && {
-			ECHO r "固件解压失败,请检查相关依赖或更换固件保存目录!"
+			ECHO r "固件解压失败,请检查固件完整性或更换固件保存目录!"
 			EXIT 1
 		} || {
+			FW_Name="$(echo ${FW_Name} | sed -r 's/(.*).gz/\1/')"
 			ECHO "固件解压成功,固件已解压到: ${AutoUpdate_Path}/${FW_Name}"
 		}
 	;;
@@ -574,11 +581,12 @@ AutoUpdate_Main() {
 	elif [[ $(CHECK_PKG wget) == true ]];then
 		Downloader="wget -q --no-check-certificate -T 5 --no-dns-cache -x"
 	else
-		Downloader="uclient-fetch -q --no-check-certificate --timeout 5"
+		Downloader="uclient-fetch -q --no-check-certificate -T 5"
 	fi
 
 	[[ -z $* ]] && PREPARE_UPGRADES $*
 	[[ $1 =~ path= && ! $* =~ -x && ! $* =~ -U ]] && PREPARE_UPGRADES $*
+	[[ $1 =~ --skip ]] && PREPARE_UPGRADES $*
 	[[ $* =~ -T || $* =~ --test ]] && Downloader="$(echo ${Downloader} | sed -r 's/-q /\1/')"
 
 	while [[ $1 ]];do
@@ -731,7 +739,7 @@ AutoUpdate_Main() {
 	done
 }
 
-Version=V6.3.0
+Version=V6.3.1
 AutoUpdate_Path=/tmp/AutoUpdate
 AutoUpdate_Log_Path=/tmp
 AutoUpdate_Script_URL=https://ghproxy.com/https://raw.githubusercontent.com/${FW_Author}/AutoBuild-Actions/master/Scripts/AutoUpdate.sh
