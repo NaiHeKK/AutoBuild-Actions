@@ -4,8 +4,8 @@ svn other luci-app-socat Lienol/openwrt-package/trunk
 git other luci-app-onliner Hyy2001X
 git other luci-app-adguardhome Hyy2001X
 svn other luci-app-eqos kenzok8/openwrt-packages/trunk
-git other luci-app-dnsfilter garypang13 main
 git other OpenClash vernesong master
+git other luci-app-dnsfilter garypang13 main
 git other openwrt-passwall xiaorouji main
 git other lua-maxminddb jerrykuku master
 git other luci-app-vssr jerrykuku master
