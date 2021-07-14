@@ -8,4 +8,3 @@ git other OpenClash vernesong master
 git other luci-app-dnsfilter garypang13 main
 # git other lua-maxminddb jerrykuku master
 # git other luci-app-vssr jerrykuku master
-git other openwrt-passwall xiaorouji main
