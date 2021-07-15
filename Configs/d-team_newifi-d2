@@ -57,7 +57,7 @@ CONFIG_UnblockNeteaseMusic_Go=y
 CONFIG_PACKAGE_luci-app-webadmin=y
 CONFIG_PACKAGE_luci-app-wol=y
 CONFIG_PACKAGE_luci-app-wireguard=y
-# CONFIG_PACKAGE_luci-app-zerotier is not set
+CONFIG_PACKAGE_luci-app-zerotier=y
 
 # Other Appliciations
 CONFIG_PACKAGE_wpad=y
