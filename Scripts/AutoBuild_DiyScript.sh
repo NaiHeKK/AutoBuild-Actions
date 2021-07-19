@@ -5,7 +5,7 @@
 Diy_Core() {
 	Author=Hyy2001
 	Short_Firmware_Date=true
-	Default_LAN_IP=10.0.0.1
+	Default_LAN_IP=192.168.1.1
 
 	INCLUDE_AutoBuild_Features=true
 	INCLUDE_DRM_I915=true
@@ -27,4 +27,5 @@ Firmware-Diy() {
 	ramips)
 		sed -i 's/5.10/5.4/' target/linux/ramips/Makefile
 	;;
+	esac
 }
