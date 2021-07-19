@@ -27,5 +27,4 @@ Firmware-Diy() {
 	ramips)
 		sed -i 's/5.10/5.4/' target/linux/ramips/Makefile
 	;;
-	esac
 }
